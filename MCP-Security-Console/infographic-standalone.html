@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AI Agent Security</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.460.0/lucide.min.js"></script>
+<style>
+:root{--bg1:#f1f6ff;--bg2:#d6e4fb;--glass:rgba(255,255,255,.7);--ink:#334a73;--navy:#0b1e44;--navy2:#274a86;--blue:#2f6bff;--line:rgba(110,150,225,.5);--tile:#dbe7ff;--tile2:#fff;--grid:rgba(70,110,190,.07);--glow:rgba(96,165,250,.3);--lbl:rgba(238,244,255,.92);--bad:#e5484d;--sh:0 10px 30px rgba(36,80,170,.14);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg1:#071229;--bg2:#040a1a;--glass:rgba(16,34,74,.62);--ink:#a9bde3;--navy:#eaf2ff;--navy2:#9db8ea;--blue:#5f95ff;--line:rgba(95,149,255,.4);--tile:#16305f;--tile2:#244a8f;--grid:rgba(120,160,255,.07);--glow:rgba(47,107,255,.35);--lbl:rgba(10,24,56,.92);--sh:0 10px 30px rgba(0,0,0,.4)}}
+:root[data-theme=dark]{--bg1:#071229;--bg2:#040a1a;--glass:rgba(16,34,74,.62);--ink:#a9bde3;--navy:#eaf2ff;--navy2:#9db8ea;--blue:#5f95ff;--line:rgba(95,149,255,.4);--tile:#16305f;--tile2:#244a8f;--grid:rgba(120,160,255,.07);--glow:rgba(47,107,255,.35);--lbl:rgba(10,24,56,.92);--sh:0 10px 30px rgba(0,0,0,.4)}
+*{box-sizing:border-box;margin:0}
+html,body{background:var(--bg2);color:var(--ink);font-family:Inter,system-ui,sans-serif;overflow-x:hidden}
+.wrap{width:1480px;transform-origin:top left;padding:26px 40px 34px;background:radial-gradient(circle at 50% 44%,var(--glow),transparent 40%),linear-gradient(var(--grid) 1px,transparent 1px) 0 0/40px 40px,linear-gradient(90deg,var(--grid) 1px,transparent 1px) 0 0/40px 40px,linear-gradient(180deg,var(--bg1),var(--bg2))}
+header{display:flex;justify-content:center;align-items:center;gap:16px;color:var(--blue);margin-bottom:24px;position:relative}
+h1{font:700 34px Sora;letter-spacing:.14em;color:var(--navy)}
+header p{font-size:15px;color:var(--navy2);margin-top:4px}
+#theme{position:absolute;right:0;top:6px;border:1px solid var(--line);background:var(--glass);color:var(--navy);border-radius:999px;padding:7px 14px;font:500 13px Inter;cursor:pointer}
+#stage{position:relative;width:1400px;height:800px;margin:0 auto}
+#lines{position:absolute;inset:0;z-index:1}
+.l{stroke:var(--blue);stroke-opacity:.35;stroke-width:1.2;transition:.25s}
+g.on .l{stroke-opacity:1;stroke-width:2.2}
+.pk{fill:var(--blue);filter:drop-shadow(0 0 4px var(--blue))}
+.card{position:absolute;z-index:3;width:320px;height:170px;padding:14px 18px 14px 52px;background:var(--glass);backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:20px;box-shadow:var(--sh);transition:.25s;cursor:pointer;outline:none;overflow:hidden}
+.card::before{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 40%,rgba(255,255,255,.35) 50%,transparent 60%);transform:translateX(-120%);transition:transform .7s}
+.card:hover::before,.card.on::before{transform:translateX(120%)}
+.card:hover,.card.on,.card:focus-visible{transform:translateY(-4px);border-color:var(--blue);box-shadow:0 0 0 1px var(--blue),0 16px 40px var(--glow)}
+.n{position:absolute;left:14px;top:14px;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font:700 14px Sora;color:#fff;background:linear-gradient(160deg,#5b8cff,#1d4ed8)}
+.card h3{font:600 15px/1.25 Sora;color:var(--navy)}
+.cb{display:flex;gap:14px;align-items:center;margin:14px 0 0 -38px}
+.ci{flex:none;width:70px;height:70px;border-radius:18px;display:grid;place-items:center;color:var(--blue);background:linear-gradient(160deg,var(--tile2),var(--tile));border:1px solid var(--line)}
+.ci svg{width:34px;height:34px;stroke-width:1.3}
+.card p{font-size:13.5px;line-height:1.45}
+.v{position:absolute;right:12px;bottom:8px;font-size:10px;color:var(--bad);border:1px dashed var(--bad);border-radius:6px;padding:1px 6px}
+#core{position:absolute;z-index:2;left:700px;top:410px}
+#core svg.big{position:absolute;left:-220px;top:-220px}
+.ck{position:absolute;left:-15px;top:-108px;color:#fff;width:30px;height:30px;stroke-width:3}
+.cbdg{position:absolute;left:-70px;top:-52px;width:140px;text-align:center;color:var(--navy);display:flex;flex-direction:column;align-items:center;gap:6px;animation:fl 5s ease-in-out infinite}
+.cbdg svg{width:44px;height:44px;stroke-width:1.3;color:var(--blue)}
+.cbdg b{font:700 20px Sora}
+@keyframes fl{50%{transform:translateY(-4px)}}
+.node{position:absolute;z-index:4;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:3px;transition:.25s}
+.ni{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;color:var(--blue);background:radial-gradient(circle at 30% 25%,var(--tile2),var(--tile));border:1.5px solid var(--line);transition:.25s}
+.ni svg{width:22px;height:22px;stroke-width:1.5}
+.node.big .ni{width:58px;height:58px;border-radius:16px}
+.node.on .ni{box-shadow:0 0 0 4px var(--glow),0 0 24px var(--blue);border-color:var(--blue);transform:scale(1.12)}
+.node span.t{font:500 12.5px Inter;color:var(--navy);background:var(--lbl);padding:0 5px;border-radius:4px;white-space:nowrap}
+.def{width:1400px;margin:38px auto 0;padding:18px 26px 14px;text-align:center;background:var(--glass);backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:24px;box-shadow:var(--sh)}
+.def h2{font:700 22px Sora;color:var(--navy);margin-bottom:14px}
+.steps{display:flex;justify-content:space-between;align-items:flex-start}
+.st{width:110px;display:flex;flex-direction:column;align-items:center;gap:8px;font:500 13px/1.25 Inter;color:var(--navy);transition:.25s}
+.si{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;color:var(--blue);background:radial-gradient(circle at 30% 25%,var(--tile2),var(--tile));border:1.5px solid var(--line);transition:.25s}
+.si svg{width:26px;height:26px;stroke-width:1.5}
+.st.on .si{box-shadow:0 0 0 5px var(--glow),0 0 28px var(--blue);border-color:var(--blue);transform:scale(1.12)}
+.ar{margin-top:19px;color:var(--blue);opacity:.6;width:18px;height:18px;flex:none}
+#cap{margin-top:14px;padding-top:10px;border-top:1px solid var(--line);font-size:14px;color:var(--navy2);min-height:34px}
+#cap b{color:var(--navy)}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap" id="wrap">
+<header><i data-lucide="shield-check" style="width:30px;height:30px"></i><div><h1>AI AGENT SECURITY</h1><p>Ten risks across the Model Context Protocol, and the layered defenses that contain them</p></div><button id="theme">Toggle theme</button></header>
+<div id="stage"><svg id="lines" width="1400" height="800" viewBox="0 0 1400 800"></svg>
+<div id="core"></div></div>
+<section class="def"><h2>Defense-in-Depth</h2><div class="steps" id="steps"></div><p id="cap"></p></section>
+</div>
+<script>
+const CAP='Every MCP interaction flows through User → Agent → MCP Server → Tools → External Systems → Response – applied at every stage';
+const S=['Least Privilege','Secret Management','Strong Authentication','Tool Validation','Dependency Scanning','Input Validation','Context Isolation','Immutable Audit Logs','Continuous Monitoring','Governance & Approval'];
+const SI=['key-round','lock','fingerprint','shield-check','scan-search','file-check','layers','scroll-text','activity','users'];
+// id, number, col, row, icon, node, title, text, defense stage, verify
+const R=[
+['r1',1,0,0,'key-round','llm','MCP01 – Token Mismanagement & Secret Exposure','Secrets accidentally accessible through prompts or logs',1],
+['r2',2,1,0,'shield-alert','llms','MCP02 – Privilege Escalation via Scope Creep','Agent gradually gaining excessive permissions',0],
+['r3',3,2,0,'wrench','tools','MCP03 – Tool Poisoning','Compromised tools feeding incorrect information to the AI',3],
+['r4',4,3,0,'package','apis','MCP04 – Software Supply Chain Attacks & Dependency Tampering','Malicious libraries propagating risk through the ecosystem',4],
+['r10a',10,0,1,'layers','llms','MCP10 – Context Injection & Over-Sharing','Prompts, confidential information between users or agents',6],
+['r9',9,0,2,'server-crash','toolsL','MCP09 – Shadow MCP Servers','Rogue deployments bypass organizational boundaries',9],
+['r5',5,3,1,'terminal-square','ext','MCP05 – Command Injection & Execution','Dangerous input leading to unintended execution',5],
+['r6',6,3,2,'split','cloud','MCP06 – Intent Flow Subversion','Competing instruction paths hijacking the agent behavior',6],
+['r8',8,0,3,'file-x','db','MCP08 – Lack of Audit and Telemetry','Inability to log, leading to inability to investigate incidents',7],
+['r7',7,1,3,'user-x','browser','MCP07 – Insufficient Authentication & Authorization','Unauthorized users reach protected resources',2],
+['r4b',4,2,3,'package-x','mcp','MCP04 – Software Authentication','Malicious libraries propagate risk through the ecosystem',4,1],
+['r10b',10,3,3,'layers','ide','MCP10 – Context Injection & Over-Sharing','Prompts, confidential information between users or agents',6,1]];
+const N={llm:['LLM','brain-circuit',610,285],tools:['Tools','wrench',790,285],llms:['LLMs','boxes',505,345],apis:['APIs','cog',895,345],toolsL:['Tools','square-terminal',485,435],ext:['External Services','globe',915,435],db:['Databases','database',520,520],cloud:['Cloud Services','cloud',880,520],browser:['Browser','compass',595,565],mcp:['MCP Server','server',700,572,1],ide:['IDEs','app-window',805,565]};
+const $=s=>document.querySelector(s), stage=$('#stage'), lines=$('#lines');
+const pos=(c,r)=>[c*360,r*210];
+const anchor=(c,r)=>{const[x,y]=pos(c,r);return r==0?[x+160,y+170]:r==3?[x+160,y]:c==0?[x+320,y+85]:[x,y+85]};
+// connectors + travelling data packets (SVG, behind nodes and cards)
+lines.innerHTML=R.map((r,i)=>{const[ax,ay]=anchor(r[2],r[3]),n=N[r[5]],d=`M${ax} ${ay}L${n[2]} ${n[3]}`;
+ return `<g data-id="${r[0]}"><path class="l" d="${d}"/><circle cx="${ax}" cy="${ay}" r="3.5" fill="var(--bg1)" stroke="var(--blue)" stroke-width="1.5"/><circle class="pk" r="2.6"><animateMotion dur="${3+(i%4)*.7}s" begin="${(i*.35).toFixed(2)}s" repeatCount="indefinite" path="${d}"/></circle></g>`}).join('');
+// cards
+stage.insertAdjacentHTML('beforeend',R.map(r=>{const[x,y]=pos(r[2],r[3]);
+ return `<article class="card" tabindex="0" data-id="${r[0]}" style="left:${x}px;top:${y}px"><span class="n">${r[1]}</span><h3>${r[6]}</h3><div class="cb"><div class="ci"><i data-lucide="${r[4]}"></i></div><p>${r[7]}</p></div>${r[9]?'<span class="v" title="Duplicate or garbled in the reference">verify</span>':''}</article>`}).join(''));
+// nodes
+stage.insertAdjacentHTML('beforeend',Object.entries(N).map(([k,n])=>`<div class="node${n[4]?' big':''}" data-node="${k}" style="left:${n[2]}px;top:${n[3]}px"><span class="ni"><i data-lucide="${n[1]}"></i></span><span class="t">${n[0]}</span></div>`).join(''));
+// core: halo, rotating rings, radar sweep, shields
+const SH='M0 -104C34 -82 70 -74 96 -72C96 10 76 70 0 112C-76 70 -96 10 -96 -72C-70 -74 -34 -82 0 -104Z';
+$('#core').innerHTML=`<svg class="big" width="440" height="440" viewBox="-220 -220 440 440"><defs><radialGradient id="h"><stop offset="0" stop-color="#60a5fa" stop-opacity=".4"/><stop offset="1" stop-color="#60a5fa" stop-opacity="0"/></radialGradient><linearGradient id="s" x1="0" y1="-1" x2="0" y2="1"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#cfe0ff"/></linearGradient><linearGradient id="rm" x1="0" y1="-1" x2="0" y2="1"><stop offset="0" stop-color="#6aa2ff"/><stop offset="1" stop-color="#2459d6"/></linearGradient><linearGradient id="t" x1="0" y1="-1" x2="0" y2="1"><stop offset="0" stop-color="#4f8dff"/><stop offset="1" stop-color="#1d4ed8"/></linearGradient><linearGradient id="sw" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#2f6bff" stop-opacity="0"/><stop offset="1" stop-color="#2f6bff" stop-opacity=".35"/></linearGradient></defs><circle r="215" fill="url(#h)"/>
+<g><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="90s" repeatCount="indefinite"/><circle r="150" fill="none" stroke="var(--blue)" stroke-opacity=".5" stroke-dasharray="2 7"/><circle r="188" fill="none" stroke="var(--blue)" stroke-opacity=".4" stroke-dasharray="30 12"/></g>
+<g><animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="8s" repeatCount="indefinite"/><path d="M0 0L170 0A170 170 0 0 0 120 -120Z" fill="url(#sw)"/><line x1="0" y1="0" x2="170" y2="0" stroke="#2f6bff" stroke-opacity=".7"/></g>
+<g transform="translate(0,-122) scale(.5)"><path d="${SH}" fill="url(#t)" stroke="#bcd3ff" stroke-width="5"/></g>
+<g transform="translate(0,6)"><path d="${SH}" fill="url(#s)" stroke="url(#rm)" stroke-width="8" stroke-linejoin="round"/><path d="${SH}" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width="2" transform="scale(.86)"/></g></svg>
+<i data-lucide="check" class="ck"></i><div class="cbdg"><i data-lucide="bot"></i><b style="color:#0b1e44">AI Agent</b></div>`;
+// defense workflow
+$('#steps').innerHTML=S.map((s,i)=>`<div class="st" data-s="${i}"><span class="si"><i data-lucide="${SI[i]}"></i></span><span>${s}</span></div>`).join('<i data-lucide="chevron-right" class="ar"></i>');
+const cap=$('#cap'); cap.textContent=CAP;
+// interaction: hovering/focusing a card lights its connector, node and the defense stage that contains it
+function act(id){document.querySelectorAll('.on').forEach(e=>e.classList.remove('on'));
+ if(!id){cap.textContent=CAP;return}
+ const r=R.find(x=>x[0]==id);
+ document.querySelectorAll(`[data-id="${id}"]`).forEach(e=>e.classList.add('on'));
+ document.querySelector(`[data-node="${r[5]}"]`).classList.add('on');
+ document.querySelector(`[data-s="${r[8]}"]`).classList.add('on');
+ cap.innerHTML=`<b>${r[6].split(' – ')[0]}</b> is contained by <b>${S[r[8]]}</b>, and connects through the <b>${N[r[5]][0]}</b> node.`}
+stage.addEventListener('mouseover',e=>{const c=e.target.closest('.card');if(c)act(c.dataset.id)});
+stage.addEventListener('mouseleave',()=>act());
+stage.addEventListener('focusin',e=>{const c=e.target.closest('.card');if(c)act(c.dataset.id)});
+stage.addEventListener('focusout',()=>act());
+// fit to window
+const wrap=$('#wrap');
+function fit(){const s=Math.min(1,innerWidth/1480);wrap.style.transform=`scale(${s})`;document.body.style.height=wrap.offsetHeight*s+'px'}
+addEventListener('resize',fit);
+// theme toggle
+$('#theme').onclick=()=>{const d=document.documentElement,dark=matchMedia('(prefers-color-scheme:dark)').matches;const cur=d.dataset.theme||(dark?'dark':'light');d.dataset.theme=cur=='dark'?'light':'dark'};
+try{lucide.createIcons()}catch(e){}
+fit();
+</script>
+</body>
+</html>
